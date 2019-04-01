@@ -126,6 +126,7 @@ public class MapperAnnotationBuilder {
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
+    //【1】 加载xml 资源
       loadXmlResource();
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
@@ -136,6 +137,7 @@ public class MapperAnnotationBuilder {
         try {
           // issue #237
           if (!method.isBridge()) {
+              //解析Statment
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
@@ -169,12 +171,16 @@ public class MapperAnnotationBuilder {
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       InputStream inputStream = null;
       try {
+          //加载资源文件
         inputStream = Resources.getResourceAsStream(type.getClassLoader(), xmlResource);
       } catch (IOException e) {
         // ignore, resource is not required
       }
       if (inputStream != null) {
-        XMLMapperBuilder xmlParser = new XMLMapperBuilder(inputStream, assistant.getConfiguration(), xmlResource, configuration.getSqlFragments(), type.getName());
+            //构建成 XMLMapperBUilder
+          XMLMapperBuilder xmlParser = new XMLMapperBuilder(inputStream, assistant.getConfiguration(), xmlResource, configuration.getSqlFragments(), type.getName());
+
+          //解析
         xmlParser.parse();
       }
     }
@@ -288,12 +294,23 @@ public class MapperAnnotationBuilder {
     return null;
   }
 
+    /**
+     * 解析所有的注解SQL
+     * @param method
+     */
   void parseStatement(Method method) {
+      //获取参数类型
     Class<?> parameterTypeClass = getParameterType(method);
+    //获取数据库方言
     LanguageDriver languageDriver = getLanguageDriver(method);
+
+    // 从注解中获取 SQL
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
+
     if (sqlSource != null) {
+
       Options options = method.getAnnotation(Options.class);
+      //获取 mappedStatementId 类全路径 + 方法名称
       final String mappedStatementId = type.getName() + "." + method.getName();
       Integer fetchSize = null;
       Integer timeout = null;

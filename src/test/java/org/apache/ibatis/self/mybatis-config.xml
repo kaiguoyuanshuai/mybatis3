@@ -6,7 +6,20 @@
     <settings>
         <setting name="logImpl" value="SLF4J"/>
         <!--<setting name="cacheEnabled" value="true" />-->
+        <setting name="cacheEnabled" value="false" />
+        <setting name="lazyLoadingEnabled" value="true" />
+        <setting name="multipleResultSetsEnabled" value="true" />
+        <setting name="useColumnLabel" value="true" />
+        <setting name="useGeneratedKeys" value="false" />
+        <setting name="defaultExecutorType" value="REUSE" />
+        <setting name="defaultStatementTimeout" value="25000" />
     </settings>
+    <typeAliases>
+        <typeAlias alias="Test" type="org.apache.ibatis.self.Test" />
+    </typeAliases>
+    <typeHandlers>
+        <!--<typeHandler handler="com.mybatis3.typehandlers.PhoneTypeHandler" />-->
+    </typeHandlers>
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
@@ -20,6 +33,6 @@
     </environments>
     <mappers>
         <mapper resource="resources/xml/TestMapper.xml"/>
-      <!--  <mapper resource="xml/PostsMapper.xml"/>-->
+        <!--  <mapper resource="xml/PostsMapper.xml"/>-->
     </mappers>
 </configuration>

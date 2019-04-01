@@ -45,7 +45,7 @@ public interface Transaction {
    */
   void rollback() throws SQLException;
 
-  /**
+   /**
    * Close inner database connection.
    * @throws SQLException
    */

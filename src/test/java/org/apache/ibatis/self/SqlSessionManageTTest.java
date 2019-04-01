@@ -34,11 +34,22 @@ public class SqlSessionManageTTest {
         return test;
     }
 
+    public static int update(SqlSession sqlSession, int id) throws SQLException {
+        TestMapper testMapper = sqlSession.getMapper(TestMapper.class);
+        long start = System.currentTimeMillis();
+        Test testParam = new Test();
+        testParam.setId(id);
+        testParam.setName("name");
+        int i = testMapper.updateByPrimaryKeySelective(testParam);
+        System.out.println("cost:" + (System.currentTimeMillis() - start));
+        return i;
+    }
+
     public static void main(String[] args) throws FileNotFoundException {
         SqlSession sqlSession = getSqlSession();
         try {
 //            diffSession();
-            System.out.println(getOne(sqlSession, 1));
+            System.out.println(update(sqlSession, 1));
 //            System.out.println(getPosts(sqlSession, 1));
 //            System.out.println(insert(sqlSession, new Test(null, 66, "test insert")));
         } catch (Exception e) {

@@ -17,9 +17,12 @@ package org.apache.ibatis.builder.xml;
 
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import javax.sql.DataSource;
 
+import org.apache.ibatis.binding.MapperProxyFactory;
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.datasource.DataSourceFactory;
@@ -96,27 +99,50 @@ public class XMLConfigBuilder extends BaseBuilder {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+
+    //【1】 parser.evalNode 解析xml对象 返回 XNode
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
 
+  /**
+   * 解析 配置文件
+   * @param root
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      //解析 properties 文件
       propertiesElement(root.evalNode("properties"));
+      //解析settings 节点
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      //
       loadCustomVfs(settings);
+
+      //
       typeAliasesElement(root.evalNode("typeAliases"));
+      //解析 plugins
       pluginElement(root.evalNode("plugins"));
+
+      //
       objectFactoryElement(root.evalNode("objectFactory"));
+
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //解析environments 信息节点
       environmentsElement(root.evalNode("environments"));
+      //解析数据库类型
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      //解析类型转换器
       typeHandlerElement(root.evalNode("typeHandlers"));
+
+      //解析 mappers 元素 ※ 重点
       mapperElement(root.evalNode("mappers"));
+
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
     }
@@ -358,26 +384,43 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      //【1】 遍历所有的mapper
       for (XNode child : parent.getChildren()) {
+        // 【2】 根据判断，根据不同的清空 设置到configuration 中
+        //如果有packge 属性 ，则获取名称
+        //<package name="org.mybatis.builder"/>
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
+          //扫描报下的所有Mapper 设置到 map中
           configuration.addMappers(mapperPackage);
         } else {
+            //每一列只会存在下面一种情况
+          //<mapper resource="resources/xml/TestMapper.xml"/>
+          //  <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+          // <mapper class="org.mybatis.builder.AuthorMapper"/>
+          //获取resource ,url ,class
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+          //只有 resource  方式的
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
             mapperParser.parse();
+            //就只有URL不为空的
           } else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
+            //通过 url 获取流
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
+            //只存在 class 的清空下
           } else if (resource == null && url == null && mapperClass != null) {
             Class<?> mapperInterface = Resources.classForName(mapperClass);
+
+             // private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<>();
+              //【3】 设置 mapperInterface 到  knownMappers 中
             configuration.addMapper(mapperInterface);
           } else {
             throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");
