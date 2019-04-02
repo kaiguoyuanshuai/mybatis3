@@ -70,10 +70,17 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
+  /**
+   * 解析XML 文件
+   */
   public void parse() {
     if (!configuration.isResourceLoaded(resource)) {
+
+      //解析 XML 文件  mapper 节点的
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
+
+      //构建 Mapper ，将 namespace中的 mapper 加入到 configuration.addMapper
       bindMapperForNamespace();
     }
 
@@ -95,9 +102,16 @@ public class XMLMapperBuilder extends BaseBuilder {
       builderAssistant.setCurrentNamespace(namespace);
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
+
+      //解析 参数类
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+
+      //解析 result 解析类
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      //解析sql 类
       sqlElement(context.evalNodes("/mapper/sql"));
+
+      //解析 执行语句
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
