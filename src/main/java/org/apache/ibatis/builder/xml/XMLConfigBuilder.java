@@ -375,6 +375,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析mapper元素
+   * @param parent
+   * @throws Exception
+   */
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
       //【1】 遍历所有的mapper
@@ -408,6 +413,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             //通过 url 获取流
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
+            //对mapper 进行解析
             mapperParser.parse();
             //只存在 class 的清空下
           } else if (resource == null && url == null && mapperClass != null) {

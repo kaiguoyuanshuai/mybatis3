@@ -63,15 +63,21 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     Integer fetchSize = context.getIntAttribute("fetchSize");
     Integer timeout = context.getIntAttribute("timeout");
+
+    //获取parameterMap 配置
     String parameterMap = context.getStringAttribute("parameterMap");
+
+    //parameterType 配置
     String parameterType = context.getStringAttribute("parameterType");
     Class<?> parameterTypeClass = resolveClass(parameterType);
+
+    // 获取返回值
     String resultMap = context.getStringAttribute("resultMap");
     String resultType = context.getStringAttribute("resultType");
     String lang = context.getStringAttribute("lang");
     LanguageDriver langDriver = getLanguageDriver(lang);
-
     Class<?> resultTypeClass = resolveClass(resultType);
+
     String resultSetType = context.getStringAttribute("resultSetType");
     StatementType statementType = StatementType.valueOf(context.getStringAttribute("statementType", StatementType.PREPARED.toString()));
     ResultSetType resultSetTypeEnum = resolveResultSetType(resultSetType);
@@ -85,6 +91,7 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     // Include Fragments before parsing
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
+    //替换include
     includeParser.applyIncludes(context.getNode());
 
     // Parse selectKey after includes and remove them.

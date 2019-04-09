@@ -84,8 +84,12 @@ public class XMLMapperBuilder extends BaseBuilder {
       bindMapperForNamespace();
     }
 
+    //解析结果集
     parsePendingResultMaps();
+
+    //解析缓存
     parsePendingCacheRefs();
+    //解析SQL
     parsePendingStatements();
   }
 
@@ -170,7 +174,11 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析SQL 内容
+   */
   private void parsePendingStatements() {
+    //
     Collection<XMLStatementBuilder> incompleteStatements = configuration.getIncompleteStatements();
     synchronized (incompleteStatements) {
       Iterator<XMLStatementBuilder> iter = incompleteStatements.iterator();
